@@ -6,10 +6,15 @@ const app = (() => {
   const button = document.querySelector(".create-course");
   const input = document.querySelector("input");
   const courses = [];
+  let isUpdate = true;
 
   return {
     createCourse(data) {
       courses.push(data);
+    },
+
+    updateCourse(data, id) {
+      courses[id] = data;
     },
     deleteCourse(id) {
       courses.splice(id, 1);
@@ -19,7 +24,8 @@ const app = (() => {
         return `
             <div class="flex gap-[10px] mt-[10px]" data-index= ${index}>
                 <li>${course}</li>
-                <button class="delete-course border bg-[#3a86ff] w-[90px] rounded-[20px]" >Xóa</button>
+                <button class="update-course border bg-[#c1121f] w-[90px] rounded-[20px] text-white">Chỉnh xửa</button>
+                <button class="delete-course border bg-[#3a86ff] w-[90px] rounded-[20px] text-white">Xóa</button>
             </div>
         `;
       });
@@ -28,26 +34,61 @@ const app = (() => {
     },
 
     handleEvent() {
-      button.onclick = () => {
-        const getData = input.value;
-
-        this.createCourse(getData);
-        this.render();
-        input.focus();
-        input.value = "";
+      button.onclick = (e) => {
+        this.handleAddCourse(e);
       };
 
       ul.onclick = (e) => {
-        const text = e.target.closest(".delete-course");
-        if (text) {
-          const parent = text.parentElement;
-          const dataIndex = parent.dataset.index;
-          this.deleteCourse(dataIndex);
-          this.render();
-        }
+        this.handleDeleteCourse(e);
+        this.handleUpdateCourse(e);
       };
     },
 
+    handleUpdateCourse(e) {
+      isUpdate = false;
+
+      const buttonUpdate = e.target.closest(".update-course");
+      if (buttonUpdate) {
+        const parent = buttonUpdate.parentElement;
+        const dataIndex = parent.dataset.index;
+
+        input.value = courses[dataIndex];
+        button.textContent = "update Course";
+
+        button.onclick = (e) => {
+          if (isUpdate === false) {
+            isUpdate = true;
+            const parent = buttonUpdate.parentElement;
+            const dataIndex = parent.dataset.index;
+            button.textContent = "add Course";
+            const newValue = input.value;
+            this.updateCourse(newValue, dataIndex);
+            input.value = "";
+            this.render();
+          } else {
+            this.handleAddCourse();
+          }
+        };
+      }
+    },
+
+    handleAddCourse() {
+      const getData = input.value;
+      this.createCourse(getData);
+      input.focus();
+      input.value = "";
+      this.render();
+    },
+
+    handleDeleteCourse(e) {
+      const buttonDelete = e.target.closest(".delete-course");
+      if (buttonDelete) {
+        const parent = buttonDelete.parentElement;
+        const dataIndex = parent.dataset.index;
+        this.deleteCourse(dataIndex);
+        this.render();
+      }
+    },
     start() {
       this.render();
       this.handleEvent();
